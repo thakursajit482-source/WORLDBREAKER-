@@ -1,9 +1,23 @@
-import { ArrowLeft, Orbit, Flame, CloudRain, Lock, ArrowRight, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react'
+import {
+  ArrowLeft,
+  Orbit,
+  Flame,
+  CloudRain,
+  Compass,
+  Lock,
+  ArrowRight,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Minimize,
+} from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { TVRemoteGuide } from './TVRemoteGuide'
 
 interface LabSelectionViewProps {
   onSelectGravityLab: () => void
+  onSelectRotationLab: () => void
+  onSelectAtmosphereLab?: () => void
   onBackToHome: () => void
   soundEnabled: boolean
   onToggleSound: () => void
@@ -12,6 +26,8 @@ interface LabSelectionViewProps {
 
 export function LabSelectionView({
   onSelectGravityLab,
+  onSelectRotationLab,
+  onSelectAtmosphereLab,
   onBackToHome,
   soundEnabled,
   onToggleSound,
@@ -148,19 +164,99 @@ export function LabSelectionView({
               </button>
             </div>
 
-            {/* Module 2: Celestial Collision (LOCKED) */}
+            {/* Module 2: Rotation Lab (ACTIVE - PHASE 4) */}
+            <div className="wb-selection-card wb-card-active">
+              <div className="wb-card-header">
+                <div className="wb-card-icon-wrap wb-card-icon-cyan">
+                  <Compass className="wb-card-icon" aria-hidden="true" />
+                </div>
+                <div className="wb-card-meta">
+                  <span className="wb-card-num">MODULE 02</span>
+                  <h2 className="wb-card-title">Rotation Lab</h2>
+                </div>
+                <span className="wb-card-status-badge wb-status-online">● ACTIVE</span>
+              </div>
+
+              <p className="wb-card-desc">
+                Interactive 3D planetary rotation chamber: simulate diurnal cycles, observe the
+                moving day/night terminator twilight band, test Slow (0.25×), Earth-like (1.00×),
+                and Rapid (2.40×) presets, and inspect angular and equatorial velocity.
+              </p>
+
+              <div className="wb-card-specs">
+                <span className="wb-card-spec-item">Speed: 0.10 – 5.00×</span>
+                <span className="wb-card-spec-item">Terminator Line</span>
+                <span className="wb-card-spec-item">Obliquity: 23.4°</span>
+              </div>
+
+              <button
+                type="button"
+                className="wb-btn wb-btn-primary wb-btn-enter-lab"
+                onClick={() => {
+                  playClick()
+                  onSelectRotationLab()
+                }}
+                data-tv-focus="true"
+              >
+                <span>ENTER ROTATION LAB</span>
+                <ArrowRight className="wb-btn-icon" aria-hidden="true" />
+              </button>
+            </div>
+
+            {/* Module 3: Atmosphere Lab (ACTIVE) */}
+            <div className="wb-selection-card wb-card-active">
+              <div className="wb-card-header">
+                <div className="wb-card-icon-wrap wb-card-icon-cyan">
+                  <CloudRain className="wb-card-icon" aria-hidden="true" />
+                </div>
+                <div className="wb-card-meta">
+                  <span className="wb-card-num">MODULE 03</span>
+                  <h2 className="wb-card-title">Atmosphere Lab</h2>
+                </div>
+                <span className="wb-card-status-badge wb-status-online">● ACTIVE</span>
+              </div>
+
+              <p className="wb-card-desc">
+                Tune atmospheric column density (0.00 – 5.00×), calculate Rayleigh and Mie optical
+                depth (Beer-Lambert attenuation), examine sunlight surface transmission, and
+                explore planetary greenhouse regimes.
+              </p>
+
+              <div className="wb-card-specs">
+                <span className="wb-card-spec-item">Density: 0 – 5.0×</span>
+                <span className="wb-card-spec-item">Rayleigh / Mie</span>
+                <span className="wb-card-spec-item">Transmission: e⁻ᵀ</span>
+              </div>
+
+              <button
+                type="button"
+                className="wb-btn wb-btn-primary wb-btn-enter-lab"
+                onClick={() => {
+                  playClick()
+                  if (onSelectAtmosphereLab) {
+                    onSelectAtmosphereLab()
+                  }
+                }}
+                data-tv-focus="true"
+              >
+                <span>ENTER ATMOSPHERE LAB</span>
+                <ArrowRight className="wb-btn-icon" aria-hidden="true" />
+              </button>
+            </div>
+
+            {/* Module 4: Celestial Collision (LOCKED) */}
             <div className="wb-selection-card wb-card-locked">
               <div className="wb-card-header">
                 <div className="wb-card-icon-wrap">
                   <Flame className="wb-card-icon" aria-hidden="true" />
                 </div>
                 <div className="wb-card-meta">
-                  <span className="wb-card-num">MODULE 02</span>
+                  <span className="wb-card-num">MODULE 04</span>
                   <h2 className="wb-card-title">Collision Chamber</h2>
                 </div>
                 <span className="wb-card-status-badge wb-status-locked">
                   <Lock className="wb-icon-lock" aria-hidden="true" />
-                  PHASE 3
+                  UPCOMING
                 </span>
               </div>
 
@@ -179,42 +275,7 @@ export function LabSelectionView({
                 className="wb-btn wb-btn-secondary wb-btn-disabled"
                 disabled
               >
-                <span>COMING IN PHASE 3</span>
-              </button>
-            </div>
-
-            {/* Module 3: Atmospheric Synthesizer (LOCKED) */}
-            <div className="wb-selection-card wb-card-locked">
-              <div className="wb-card-header">
-                <div className="wb-card-icon-wrap">
-                  <CloudRain className="wb-card-icon" aria-hidden="true" />
-                </div>
-                <div className="wb-card-meta">
-                  <span className="wb-card-num">MODULE 03</span>
-                  <h2 className="wb-card-title">Atmospheric Synthesizer</h2>
-                </div>
-                <span className="wb-card-status-badge wb-status-locked">
-                  <Lock className="wb-icon-lock" aria-hidden="true" />
-                  PHASE 4
-                </span>
-              </div>
-
-              <p className="wb-card-desc">
-                Tune greenhouse gas ratios, calculate optical depth, planetary albedo feedback
-                loops, and surface habitability thresholds.
-              </p>
-
-              <div className="wb-card-specs">
-                <span className="wb-card-spec-item">Rayleigh / Mie Optics</span>
-                <span className="wb-card-spec-item">Greenhouse Feedback</span>
-              </div>
-
-              <button
-                type="button"
-                className="wb-btn wb-btn-secondary wb-btn-disabled"
-                disabled
-              >
-                <span>COMING IN PHASE 4</span>
+                <span>COMING SOON</span>
               </button>
             </div>
           </div>

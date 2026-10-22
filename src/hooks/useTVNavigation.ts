@@ -1,9 +1,10 @@
 import { useEffect, useCallback } from 'react'
+import type { AppScreen } from '../types'
 
 interface TVNavigationOptions {
   activeModal: string
   onCloseModal: () => void
-  currentScreen?: 'home' | 'lab-select' | 'gravity-lab'
+  currentScreen?: AppScreen
   onScreenBack?: () => void
 }
 

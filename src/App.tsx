@@ -7,6 +7,8 @@ import { TVRemoteGuide } from './components/UI/TVRemoteGuide'
 import { HowItWorksModal } from './components/UI/HowItWorksModal'
 import { LabSelectionView } from './components/UI/LabSelectionView'
 import { GravityLabView } from './features/gravity/GravityLabView'
+import { RotationLabView } from './features/rotation/RotationLabView'
+import { AtmosphereLab } from './components/AtmosphereLab'
 import { useTVNavigation } from './hooks/useTVNavigation'
 import { useSoundEffects } from './hooks/useSoundEffects'
 import type { ModalType, AppScreen } from './types'
@@ -36,9 +38,23 @@ export function App() {
     setCurrentScreen('gravity-lab')
   }, [playOpen])
 
+  const handleSelectRotationLab = useCallback(() => {
+    playOpen()
+    setCurrentScreen('rotation-lab')
+  }, [playOpen])
+
+  const handleSelectAtmosphereLab = useCallback(() => {
+    playOpen()
+    setCurrentScreen('atmosphere-lab')
+  }, [playOpen])
+
   const handleScreenBack = useCallback(() => {
     playClick()
-    if (currentScreen === 'gravity-lab') {
+    if (
+      currentScreen === 'gravity-lab' ||
+      currentScreen === 'rotation-lab' ||
+      currentScreen === 'atmosphere-lab'
+    ) {
       setCurrentScreen('lab-select')
     } else if (currentScreen === 'lab-select') {
       setCurrentScreen('home')
@@ -53,7 +69,23 @@ export function App() {
     onScreenBack: handleScreenBack,
   })
 
-  // Render Gravity Lab View
+  // Render Rotation Lab View (Phase 4)
+  if (currentScreen === 'rotation-lab') {
+    return (
+      <RotationLabView
+        onBack={() => {
+          playClick()
+          setCurrentScreen('lab-select')
+        }}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
+        playClick={playClick}
+        playOpen={playOpen}
+      />
+    )
+  }
+
+  // Render Gravity Lab View (Phase 2)
   if (currentScreen === 'gravity-lab') {
     return (
       <GravityLabView
@@ -70,6 +102,19 @@ export function App() {
     )
   }
 
+  // Render Atmosphere Lab View (Phase 3)
+  if (currentScreen === 'atmosphere-lab') {
+    return (
+      <AtmosphereLab
+        onBack={() => {
+          playClick()
+          setCurrentScreen('lab-select')
+        }}
+        onReset={playClick}
+      />
+    )
+  }
+
   // Render Experiment Selection View
   if (currentScreen === 'lab-select') {
     return (
@@ -78,6 +123,8 @@ export function App() {
         <Scene />
         <LabSelectionView
           onSelectGravityLab={handleSelectGravityLab}
+          onSelectRotationLab={handleSelectRotationLab}
+          onSelectAtmosphereLab={handleSelectAtmosphereLab}
           onBackToHome={() => {
             playClick()
             setCurrentScreen('home')
