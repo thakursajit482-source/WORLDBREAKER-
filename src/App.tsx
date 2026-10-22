@@ -5,14 +5,16 @@ import { HeroOverlay } from './components/UI/HeroOverlay'
 import { TelemetryPanel } from './components/UI/TelemetryPanel'
 import { TVRemoteGuide } from './components/UI/TVRemoteGuide'
 import { HowItWorksModal } from './components/UI/HowItWorksModal'
-import { LabEntranceModal } from './components/UI/LabEntranceModal'
+import { LabSelectionView } from './components/UI/LabSelectionView'
+import { GravityLabView } from './features/gravity/GravityLabView'
 import { useTVNavigation } from './hooks/useTVNavigation'
 import { useSoundEffects } from './hooks/useSoundEffects'
-import type { ModalType } from './types'
+import type { ModalType, AppScreen } from './types'
 
 export function App() {
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>('home')
   const [activeModal, setActiveModal] = useState<ModalType>('none')
-  const { soundEnabled, toggleSound, playClick, playOpen } = useSoundEffects()
+  const { soundEnabled, toggleSound, playClick, playOpen, playImpact } = useSoundEffects()
 
   const handleCloseModal = useCallback(() => {
     setActiveModal('none')
@@ -21,7 +23,7 @@ export function App() {
 
   const handleEnterLab = useCallback(() => {
     playOpen()
-    setActiveModal('lab-entrance')
+    setCurrentScreen('lab-select')
   }, [playOpen])
 
   const handleHowItWorks = useCallback(() => {
@@ -29,12 +31,66 @@ export function App() {
     setActiveModal('how-it-works')
   }, [playOpen])
 
+  const handleSelectGravityLab = useCallback(() => {
+    playOpen()
+    setCurrentScreen('gravity-lab')
+  }, [playOpen])
+
+  const handleScreenBack = useCallback(() => {
+    playClick()
+    if (currentScreen === 'gravity-lab') {
+      setCurrentScreen('lab-select')
+    } else if (currentScreen === 'lab-select') {
+      setCurrentScreen('home')
+    }
+  }, [currentScreen, playClick])
+
   // Fire TV D-Pad & Keyboard Remote Navigation Hook
   useTVNavigation({
     activeModal,
     onCloseModal: handleCloseModal,
+    currentScreen,
+    onScreenBack: handleScreenBack,
   })
 
+  // Render Gravity Lab View
+  if (currentScreen === 'gravity-lab') {
+    return (
+      <GravityLabView
+        onBack={() => {
+          playClick()
+          setCurrentScreen('lab-select')
+        }}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
+        playClick={playClick}
+        playOpen={playOpen}
+        playImpact={playImpact}
+      />
+    )
+  }
+
+  // Render Experiment Selection View
+  if (currentScreen === 'lab-select') {
+    return (
+      <div className="wb-app">
+        {/* Background Starfield Canvas */}
+        <Scene />
+        <LabSelectionView
+          onSelectGravityLab={handleSelectGravityLab}
+          onBackToHome={() => {
+            playClick()
+            setCurrentScreen('home')
+          }}
+          soundEnabled={soundEnabled}
+          onToggleSound={toggleSound}
+          playClick={playClick}
+        />
+      </div>
+    )
+  }
+
+  // Default: Orbit Home View (Phase 1 preserved)
   return (
     <div className="wb-app">
       {/* 3D WebGL Canvas Layer (Procedural Planet + Starfield) */}
@@ -61,11 +117,6 @@ export function App() {
       {/* Accessible Modals */}
       <HowItWorksModal
         isOpen={activeModal === 'how-it-works'}
-        onClose={handleCloseModal}
-      />
-
-      <LabEntranceModal
-        isOpen={activeModal === 'lab-entrance'}
         onClose={handleCloseModal}
       />
     </div>

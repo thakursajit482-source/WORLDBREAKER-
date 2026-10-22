@@ -9,4 +9,6 @@ export interface PlanetTelemetry {
   atmosphereComposition: string;
 }
 
-export type ModalType = 'none' | 'how-it-works' | 'lab-entrance';
+export type ModalType = 'none' | 'how-it-works';
+
+export type AppScreen = 'home' | 'lab-select' | 'gravity-lab';

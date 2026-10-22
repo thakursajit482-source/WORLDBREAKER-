@@ -2,6 +2,7 @@
 
 > **Amazon Developer Hackathon 2026 — Fire TV Track**  
 > *Phase 1: 3D Celestial Core & Orbital Foundation*  
+> *Phase 2: Gravity Lab & Celestial Kinematics*  
 > *"The universe is yours to experiment with."*
 
 ---
@@ -10,12 +11,21 @@
 
 **WORLDBREAKER** is a premium interactive 3D science exploration platform designed for cinematic living room experiences on Fire TV and desktop browsers. Users explore real-time astrophysics, planetary thermodynamics, and cosmic experimentation through an immersive procedural laboratory.
 
-**Phase 1** establishes the foundation:
-- A responsive deep-space environment with dynamic lighting.
-- A procedural 3D planet generated via GPU shaders (no heavy textures or image downloads).
-- Atmospheric Rayleigh/Mie scattering halo and night-side bio-luminescence.
-- Science telemetry HUD with live exoplanet physics metrics.
-- High-contrast focus rings and spatial D-pad / keyboard navigation designed for 10-foot TV interactions.
+### Phase 1 & 2 Completed Features
+- **Cinematic Orbit View**: Procedural 3D planet with multi-octave Fractional Brownian Motion (FBM) shader, ocean specular reflections, polar ice caps, swirling cloud cover, night-side city luminescence, and atmospheric Rayleigh/Mie scattering halo.
+- **Experiment Selector**: Clean laboratory chamber selector allowing users to choose active modules while communicating future roadmap milestones.
+- **Module 01: Gravity Lab**:
+  - Immersive 3D drop tower spanning 0m to 20m with vertical gantry, guide laser, and glowing height markers (0m, 5m, 10m, 15m, 20m).
+  - Landing impact platform with target reticles and dynamic ground shockwave on impact.
+  - Visible sphere with dynamic floor shadow scaling by altitude.
+  - Classical free-fall kinematics: $s = \frac{1}{2}gt^2$ and $v = gt$.
+  - Fixed simulation timestep (120Hz) keeping physics calculation strictly decoupled from rendering frame rate.
+  - Gravity presets: **Earth** ($9.81\text{ m/s}^2$), **Moon** ($1.62\text{ m/s}^2$), and **Jupiter** ($24.79\text{ m/s}^2$).
+  - Continuous gravity slider from $1.0\text{ m/s}^2$ to $25.0\text{ m/s}^2$.
+  - Full simulation controls: **DROP**, **PAUSE**, **RESUME**, and **RESET**.
+  - Live telemetry HUD displaying elapsed time, remaining height, instantaneous velocity, selected gravity, altitude trajectory percentage, and theoretical benchmarks.
+  - Clamps ball at floor ($h = 0$) and halts simulation at impact.
+  - 10-foot Fire TV remote and keyboard navigation with high-contrast cyan/violet focus states.
 
 ---
 
@@ -25,6 +35,8 @@
 - **Bundler**: Vite 8
 - **3D Graphics**: Three.js, React Three Fiber (`@react-three/fiber`), Drei (`@react-three/drei`)
 - **Styling**: Modern CSS with CSS custom properties, glassmorphism, and accessible TV focus indicators
+- **Theme Palette**: WORLDBREAKER Deep Navy (`#080D19`), Cyan (`#55DDF5`), and Violet (`#A99BFF`)
+- **Audio**: Web Audio API procedural synthesizer (zero audio assets)
 - **Icons**: Lucide React
 - **Testing**: Vitest
 
@@ -39,7 +51,7 @@
 
 ### Installation
 
-Clone or open the project folder in your terminal, then install dependencies:
+Install dependencies:
 
 ```bash
 npm install
@@ -89,11 +101,12 @@ The interface is engineered for standard 10-foot UI standards, supporting both d
 
 | Control | Action |
 | :--- | :--- |
-| **▲ / ▼ / ◄ / ►** (D-Pad or Arrow Keys) | Spatially navigate between interactive elements |
-| **ENTER / SELECT** | Activate selected button or open modal |
-| **ESC / BACK / Backspace** | Dismiss open modal or return to orbit view |
+| **▲ / ▼ / ◄ / ►** (D-Pad or Arrow Keys) | Spatially navigate between interactive buttons & presets |
+| **◄ / ► on Slider** | Fine-tune gravitational acceleration ($1 - 25\text{ m/s}^2$) |
+| **ENTER / Space / SELECT** | Activate selected button, start/pause/reset simulation |
+| **ESC / BACK / Backspace** | Return to previous screen (Gravity Lab $\to$ Selector $\to$ Orbit View) or close modal |
 | **Tab / Shift+Tab** | Sequential focus navigation |
-| **Pointer / Cursor** | Gentle planetary camera parallax tilt |
+| **Pointer / Cursor** | Gentle camera parallax tilt in 3D views |
 
 ---
 
@@ -101,7 +114,7 @@ The interface is engineered for standard 10-foot UI standards, supporting both d
 
 ```
 worldbreaker/
-├── public/                 # Static public assets
+├── public/
 ├── src/
 │   ├── components/
 │   │   ├── Canvas3D/
@@ -113,18 +126,27 @@ worldbreaker/
 │   │       ├── HeroOverlay.tsx      # WORLDBREAKER wordmark, tagline, and CTA buttons
 │   │       ├── TelemetryPanel.tsx   # Live planetary science HUD readout
 │   │       ├── HowItWorksModal.tsx  # Science and architecture explanation dialog
-│   │       ├── LabEntranceModal.tsx # Station console previewing Phase 2 Gravity Lab
+│   │       ├── LabSelectionView.tsx # Experiment chamber selection screen
 │   │       └── TVRemoteGuide.tsx    # D-Pad navigation legend
+│   ├── features/
+│   │   └── gravity/
+│   │       ├── physics.ts              # Classical mechanics equations, presets & fixed-timestep stepper
+│   │       ├── physics.test.ts         # Vitest unit test suite (kinematics, impact times, floor clamping)
+│   │       ├── useGravitySimulation.ts # React hook for deterministic simulation state
+│   │       ├── GravityLabScene.tsx     # 3D 20m drop tower, height markers, landing floor & ball
+│   │       ├── GravityControls.tsx     # Presets (Earth, Moon, Jupiter), slider & DROP/PAUSE/RESUME/RESET
+│   │       ├── GravityTelemetry.tsx    # Live elapsed time, height, velocity, gravity & altitude progress
+│   │       └── GravityLabView.tsx      # Main Gravity Lab orchestrator
 │   ├── hooks/
-│   │   ├── useTVNavigation.ts       # Spatial D-pad & keyboard navigation handler
-│   │   └── useSoundEffects.ts       # Procedural Web Audio synthesizer (zero audio assets)
+│   │   ├── useTVNavigation.ts       # Spatial D-pad, keyboard, and screen-level Back navigation
+│   │   └── useSoundEffects.ts       # Procedural Web Audio synthesizer (click, open, impact chimes)
 │   ├── styles/
-│   │   └── app.css                  # Cyber-space design tokens, focus rings, responsive CSS
+│   │   └── app.css                  # Deep-space theme (#55DDF5, #A99BFF, #080D19), TV focus rings
 │   ├── types/
-│   │   ├── index.ts                 # TypeScript types for telemetry & UI state
-│   │   └── index.test.ts            # Vitest unit tests for physics telemetry model
-│   ├── App.tsx                      # Main application orchestrator
-│   ├── index.css                    # Global resets & entry stylesheet
+│   │   ├── index.ts                 # TypeScript types for telemetry, modals, and screen state
+│   │   └── index.test.ts            # Physics telemetry model test
+│   ├── App.tsx                      # View router (home -> lab-select -> gravity-lab)
+│   ├── index.css                    # Entry stylesheet
 │   └── main.tsx                     # React DOM entry point
 ├── index.html                       # HTML shell with Google Fonts preloads
 ├── package.json                     # Dependencies, scripts, and build configuration
@@ -134,15 +156,16 @@ worldbreaker/
 
 ---
 
-## ⚡ Performance Optimization
+## 🔬 Physics Verification
 
-- **Zero Heavy Assets**: The 3D planet uses procedural GLSL math (3D Simplex & Fractional Brownian Motion noise) rather than 4K/8K image textures. This guarantees fast initial load times and smooth 60fps performance even on memory-constrained devices.
-- **Particle Budgeting**: Foreground cosmic dust is capped at 60 particles, and background stars use single-draw-call point clouds.
-- **Vendor Splitting**: Three.js and React bundles are split into dedicated chunks to optimize browser caching.
+The simulation accurately evaluates classical free-fall kinematics from rest:
+- Distance fallen: $s(t) = \frac{1}{2}gt^2$
+- Velocity: $v(t) = gt$
+- Remaining height: $h(t) = \max(0, h_0 - s(t))$
+- Impact time: $t_{\text{impact}} = \sqrt{\frac{2h_0}{g}}$
+- Impact velocity: $v_{\text{impact}} = \sqrt{2gh_0}$
 
----
-
-## ⚠️ Phase 1 Boundary & TV Platform Note
-
-- **Phase 1 Scope**: This phase provides the core 3D scene, responsive home screen, telemetry HUD, modal interactions, and keyboard/D-pad navigation. Laboratory simulation experiments (Gravity Lab, Collision Simulator, Atmosphere Engine) are scheduled for subsequent phases.
-- **Fire TV Packaging**: As per project constraints, web app compatibility in a browser is not equivalent to native Fire TV deployment. Android/Fire OS packaging (e.g., via Capacitor or Amazon Web App Starter Kit) will be addressed once the web lab foundation is complete.
+Benchmarked from $h_0 = 20\text{ m}$:
+- **Earth** ($g = 9.81\text{ m/s}^2$): $t_{\text{impact}} \approx 2.02\text{ s}$, $v_{\text{impact}} \approx 19.81\text{ m/s}$
+- **Moon** ($g = 1.62\text{ m/s}^2$): $t_{\text{impact}} \approx 4.97\text{ s}$, $v_{\text{impact}} \approx 8.05\text{ m/s}$
+- **Jupiter** ($g = 24.79\text{ m/s}^2$): $t_{\text{impact}} \approx 1.27\text{ s}$, $v_{\text{impact}} \approx 31.49\text{ m/s}$
