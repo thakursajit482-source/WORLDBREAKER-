@@ -3,7 +3,7 @@ import { useEffect, useCallback } from 'react'
 interface TVNavigationOptions {
   activeModal: string
   onCloseModal: () => void
-  currentScreen?: 'home' | 'lab-select' | 'gravity-lab'
+  currentScreen?: string
   onScreenBack?: () => void
 }
 

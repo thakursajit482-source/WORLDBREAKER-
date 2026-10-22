@@ -7,6 +7,11 @@ import { TVRemoteGuide } from './components/UI/TVRemoteGuide'
 import { HowItWorksModal } from './components/UI/HowItWorksModal'
 import { LabSelectionView } from './components/UI/LabSelectionView'
 import { GravityLabView } from './features/gravity/GravityLabView'
+import { AtmosphereLab } from './components/AtmosphereLab/AtmosphereLab'
+import { MissionFlow } from './features/missions/MissionFlow'
+import { MissionSelectView } from './features/missions/MissionSelectView'
+import { MISSIONS } from './features/missions/missionData'
+import type { MissionDefinition } from './features/missions/types'
 import { useTVNavigation } from './hooks/useTVNavigation'
 import { useSoundEffects } from './hooks/useSoundEffects'
 import type { ModalType, AppScreen } from './types'
@@ -14,6 +19,7 @@ import type { ModalType, AppScreen } from './types'
 export function App() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('home')
   const [activeModal, setActiveModal] = useState<ModalType>('none')
+  const [currentMission, setCurrentMission] = useState<MissionDefinition>(MISSIONS[0])
   const { soundEnabled, toggleSound, playClick, playOpen, playImpact } = useSoundEffects()
 
   const handleCloseModal = useCallback(() => {
@@ -36,10 +42,36 @@ export function App() {
     setCurrentScreen('gravity-lab')
   }, [playOpen])
 
+  const handleSelectAtmosphereLab = useCallback(() => {
+    playOpen()
+    setCurrentScreen('atmosphere-lab')
+  }, [playOpen])
+
+  const handleSelectMissions = useCallback(() => {
+    playOpen()
+    setCurrentScreen('mission-select')
+  }, [playOpen])
+
+  const handleStartMission = useCallback(
+    (missionId: string) => {
+      playOpen()
+      const m = MISSIONS.find((x) => x.id === missionId) || MISSIONS[0]
+      setCurrentMission(m)
+      setCurrentScreen('mission-flow')
+    },
+    [playOpen],
+  )
+
   const handleScreenBack = useCallback(() => {
     playClick()
-    if (currentScreen === 'gravity-lab') {
+    if (
+      currentScreen === 'gravity-lab' ||
+      currentScreen === 'atmosphere-lab' ||
+      currentScreen === 'mission-select'
+    ) {
       setCurrentScreen('lab-select')
+    } else if (currentScreen === 'mission-flow') {
+      setCurrentScreen('mission-select')
     } else if (currentScreen === 'lab-select') {
       setCurrentScreen('home')
     }
@@ -52,6 +84,47 @@ export function App() {
     currentScreen,
     onScreenBack: handleScreenBack,
   })
+
+  // Render Guided Mission Flow View
+  if (currentScreen === 'mission-flow' && currentMission) {
+    return (
+      <MissionFlow
+        mission={currentMission}
+        onExitMission={() => {
+          playClick()
+          setCurrentScreen('mission-select')
+        }}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
+        playClick={playClick}
+        playOpen={playOpen}
+        playImpact={playImpact}
+      />
+    )
+  }
+
+  // Render Mission Operations / Flight Training Selector
+  if (currentScreen === 'mission-select') {
+    return (
+      <div className="wb-app">
+        <Scene />
+        <MissionSelectView
+          onSelectMission={(m) => {
+            playOpen()
+            setCurrentMission(m)
+            setCurrentScreen('mission-flow')
+          }}
+          onBackToLabSelect={() => {
+            playClick()
+            setCurrentScreen('lab-select')
+          }}
+          soundEnabled={soundEnabled}
+          onToggleSound={toggleSound}
+          playClick={playClick}
+        />
+      </div>
+    )
+  }
 
   // Render Gravity Lab View
   if (currentScreen === 'gravity-lab') {
@@ -70,6 +143,18 @@ export function App() {
     )
   }
 
+  // Render Atmosphere Lab View
+  if (currentScreen === 'atmosphere-lab') {
+    return (
+      <AtmosphereLab
+        onBack={() => {
+          playClick()
+          setCurrentScreen('lab-select')
+        }}
+      />
+    )
+  }
+
   // Render Experiment Selection View
   if (currentScreen === 'lab-select') {
     return (
@@ -78,6 +163,9 @@ export function App() {
         <Scene />
         <LabSelectionView
           onSelectGravityLab={handleSelectGravityLab}
+          onSelectAtmosphereLab={handleSelectAtmosphereLab}
+          onSelectMissions={handleSelectMissions}
+          onStartMission={handleStartMission}
           onBackToHome={() => {
             playClick()
             setCurrentScreen('home')

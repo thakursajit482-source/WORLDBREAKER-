@@ -1,9 +1,24 @@
-import { ArrowLeft, Orbit, Flame, CloudRain, Lock, ArrowRight, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react'
+import {
+  ArrowLeft,
+  Orbit,
+  Flame,
+  CloudRain,
+  Lock,
+  ArrowRight,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Minimize,
+  Rocket,
+} from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { TVRemoteGuide } from './TVRemoteGuide'
 
 interface LabSelectionViewProps {
   onSelectGravityLab: () => void
+  onSelectAtmosphereLab?: () => void
+  onSelectMissions?: () => void
+  onStartMission?: (missionId: string) => void
   onBackToHome: () => void
   soundEnabled: boolean
   onToggleSound: () => void
@@ -12,6 +27,9 @@ interface LabSelectionViewProps {
 
 export function LabSelectionView({
   onSelectGravityLab,
+  onSelectAtmosphereLab,
+  onSelectMissions,
+  onStartMission,
   onBackToHome,
   soundEnabled,
   onToggleSound,
@@ -58,6 +76,24 @@ export function LabSelectionView({
               <ArrowLeft className="wb-back-icon" aria-hidden="true" />
               <span>ORBIT VIEW</span>
             </button>
+
+            {onSelectMissions && (
+              <button
+                type="button"
+                className="wb-back-btn"
+                style={{ borderColor: 'rgba(169, 155, 255, 0.4)', color: '#a99bff' }}
+                onClick={() => {
+                  playClick()
+                  onSelectMissions()
+                }}
+                data-tv-focus="true"
+                aria-label="View Flight Training Missions"
+                title="View Flight Training Missions"
+              >
+                <Rocket className="wb-back-icon" style={{ color: '#a99bff' }} aria-hidden="true" />
+                <span>FLIGHT MISSIONS</span>
+              </button>
+            )}
 
             <div className="wb-badge">
               <span className="wb-badge-pulse" />
@@ -133,19 +169,37 @@ export function LabSelectionView({
                 <span className="wb-card-spec-item">Kinematics: s = ½gt²</span>
               </div>
 
-              <button
-                type="button"
-                className="wb-btn wb-btn-primary wb-btn-enter-lab"
-                onClick={() => {
-                  playClick()
-                  onSelectGravityLab()
-                }}
-                data-tv-focus="true"
-                autoFocus
-              >
-                <span>ENTER GRAVITY LAB</span>
-                <ArrowRight className="wb-btn-icon" aria-hidden="true" />
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-primary wb-btn-enter-lab"
+                  onClick={() => {
+                    playClick()
+                    onSelectGravityLab()
+                  }}
+                  data-tv-focus="true"
+                  autoFocus
+                >
+                  <span>ENTER GRAVITY LAB</span>
+                  <ArrowRight className="wb-btn-icon" aria-hidden="true" />
+                </button>
+
+                {onStartMission && (
+                  <button
+                    type="button"
+                    className="wb-btn wb-btn-secondary"
+                    style={{ padding: '0.75rem 1.2rem', fontSize: '0.82rem' }}
+                    onClick={() => {
+                      playClick()
+                      onStartMission('mission-gravity-01')
+                    }}
+                    data-tv-focus="true"
+                  >
+                    <Rocket size={15} aria-hidden="true" />
+                    <span>START GRAVITY MISSION</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Module 2: Celestial Collision (LOCKED) */}
@@ -183,39 +237,84 @@ export function LabSelectionView({
               </button>
             </div>
 
-            {/* Module 3: Atmospheric Synthesizer (LOCKED) */}
-            <div className="wb-selection-card wb-card-locked">
+            {/* Module 3: Atmospheric Synthesizer (ACTIVE) */}
+            <div
+              className={`wb-selection-card ${
+                onSelectAtmosphereLab ? 'wb-card-active' : 'wb-card-locked'
+              }`}
+            >
               <div className="wb-card-header">
-                <div className="wb-card-icon-wrap">
+                <div
+                  className={`wb-card-icon-wrap ${
+                    onSelectAtmosphereLab ? 'wb-card-icon-cyan' : ''
+                  }`}
+                >
                   <CloudRain className="wb-card-icon" aria-hidden="true" />
                 </div>
                 <div className="wb-card-meta">
                   <span className="wb-card-num">MODULE 03</span>
                   <h2 className="wb-card-title">Atmospheric Synthesizer</h2>
                 </div>
-                <span className="wb-card-status-badge wb-status-locked">
-                  <Lock className="wb-icon-lock" aria-hidden="true" />
-                  PHASE 4
+                <span
+                  className={`wb-card-status-badge ${
+                    onSelectAtmosphereLab ? 'wb-status-online' : 'wb-status-locked'
+                  }`}
+                >
+                  {onSelectAtmosphereLab ? '● ACTIVE' : 'PHASE 4'}
                 </span>
               </div>
 
               <p className="wb-card-desc">
-                Tune greenhouse gas ratios, calculate optical depth, planetary albedo feedback
-                loops, and surface habitability thresholds.
+                Tune atmospheric density, observe Rayleigh limb scattering and Beer-Lambert
+                extinction, and analyze real-time optical depth and surface pressure.
               </p>
 
               <div className="wb-card-specs">
                 <span className="wb-card-spec-item">Rayleigh / Mie Optics</span>
-                <span className="wb-card-spec-item">Greenhouse Feedback</span>
+                <span className="wb-card-spec-item">Density: 0.00 – 5.00×</span>
+                <span className="wb-card-spec-item">Beer-Lambert Extinction</span>
               </div>
 
-              <button
-                type="button"
-                className="wb-btn wb-btn-secondary wb-btn-disabled"
-                disabled
-              >
-                <span>COMING IN PHASE 4</span>
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {onSelectAtmosphereLab ? (
+                  <button
+                    type="button"
+                    className="wb-btn wb-btn-primary wb-btn-enter-lab"
+                    onClick={() => {
+                      playClick()
+                      onSelectAtmosphereLab()
+                    }}
+                    data-tv-focus="true"
+                  >
+                    <span>ENTER ATMOSPHERE LAB</span>
+                    <ArrowRight className="wb-btn-icon" aria-hidden="true" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="wb-btn wb-btn-secondary wb-btn-disabled"
+                    disabled
+                  >
+                    <span>COMING IN PHASE 4</span>
+                  </button>
+                )}
+
+                {onStartMission && (
+                  <button
+                    type="button"
+                    className="wb-btn wb-btn-secondary"
+                    style={{ padding: '0.75rem 1.2rem', fontSize: '0.82rem' }}
+                    onClick={() => {
+                      playClick()
+                      onStartMission('mission-atmosphere-01')
+                    }}
+                    data-tv-focus="true"
+                  >
+                    <Rocket size={15} aria-hidden="true" />
+                    <span>START ATMOSPHERE MISSION</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </main>
