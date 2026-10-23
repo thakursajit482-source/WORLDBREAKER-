@@ -13,7 +13,9 @@ import {
   Compass,
   CheckCircle2,
   Sparkles,
+  ArrowRight,
 } from 'lucide-react'
+import type { ExperimentDiscoveryData } from '../../features/missions/types'
 import { StarsBackground } from '../Canvas3D/StarsBackground'
 import { AtmospherePlanet3D } from './AtmospherePlanet3D'
 import {
@@ -32,6 +34,10 @@ export interface AtmosphereLabProps {
   initialDensity?: number
   /** Optional CSS class name for outer wrapper */
   className?: string
+  /** Optional flag indicating running within a learning mission */
+  missionMode?: boolean
+  /** Callback to deliver measured telemetry to the mission discovery summary */
+  onCompleteExperiment?: (data: ExperimentDiscoveryData) => void
 }
 
 export function AtmosphereLab({
@@ -39,6 +45,8 @@ export function AtmosphereLab({
   onReset,
   initialDensity = 1.0,
   className = '',
+  missionMode = false,
+  onCompleteExperiment,
 }: AtmosphereLabProps) {
   const [density, setDensity] = useState<number>(() =>
     Math.max(0, Math.min(5.0, initialDensity)),
@@ -205,6 +213,74 @@ export function AtmosphereLab({
           </div>
 
           <div className="wb-atmo-header-right">
+            {missionMode && onCompleteExperiment && (
+              <button
+                type="button"
+                className="wb-mission-btn wb-mission-btn-primary"
+                style={{ padding: '0.55rem 1.1rem', fontSize: '0.82rem' }}
+                onClick={() => {
+                  const data: ExperimentDiscoveryData = {
+                    labType: 'atmosphere-lab',
+                    labName: 'Atmospheric Synthesizer',
+                    completedAt: new Date().toISOString(),
+                    parametersUsed: {
+                      'Density': `${density.toFixed(2)}× atm`,
+                      'Scattering Regime': metrics.regimeName,
+                    },
+                    metrics: [
+                      {
+                        id: 'density',
+                        label: 'Atmospheric Column Density',
+                        value: density,
+                        unit: '× Earth',
+                        theoreticalValue: density,
+                        description: 'Relative mass column density normalized to Earth standard.',
+                      },
+                      {
+                        id: 'zenith_tau',
+                        label: 'Zenith Optical Depth (τ_z)',
+                        value: metrics.zenithOpticalDepth,
+                        unit: 'τ',
+                        theoreticalValue: Number((density * 0.22).toFixed(3)),
+                        description: 'Vertical optical attenuation factor: τ = ρ * 0.22.',
+                      },
+                      {
+                        id: 'limb_tau',
+                        label: 'Limb Optical Depth (τ_limb)',
+                        value: metrics.limbOpticalDepth,
+                        unit: 'τ',
+                        theoreticalValue: Number((density * 1.65).toFixed(3)),
+                        description: 'Slant optical depth along tangential planetary limb.',
+                      },
+                      {
+                        id: 'transmission',
+                        label: 'Surface Direct Transmission (T)',
+                        value: metrics.surfaceTransmissionPercent,
+                        unit: '%',
+                        theoreticalValue: Number((Math.exp(-metrics.zenithOpticalDepth) * 100).toFixed(1)),
+                        description: 'Direct sunlight reaching surface via Beer-Lambert law: T = e⁻ᵠ.',
+                      },
+                      {
+                        id: 'pressure',
+                        label: 'Estimated Surface Pressure',
+                        value: metrics.estimatedPressureKPa,
+                        unit: 'kPa',
+                        theoreticalValue: Number((density * 101.325).toFixed(1)),
+                        description: 'Surface barometric pressure exerted by atmosphere.',
+                      },
+                    ],
+                    conclusion:
+                      'Increasing atmospheric column density results in exponential attenuation of direct sunlight (Beer-Lambert law) and shifts scattering from Rayleigh cyan-blue into dense Mie aerosol haze.',
+                    scientificPrinciple: 'Rayleigh Scattering Law & Beer-Lambert Optical Extinction',
+                  }
+                  onCompleteExperiment(data)
+                }}
+                data-tv-focus="true"
+              >
+                <span>LOG TELEMETRY</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </button>
+            )}
             <button
               type="button"
               className="wb-atmo-btn-reset"

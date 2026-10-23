@@ -1,10 +1,11 @@
-import { ArrowLeft, Orbit, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react'
+import { ArrowLeft, Orbit, Volume2, VolumeX, Maximize, Minimize, ArrowRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { GravityLabScene } from './GravityLabScene'
 import { GravityControls } from './GravityControls'
 import { GravityTelemetry } from './GravityTelemetry'
 import { useGravitySimulation } from './useGravitySimulation'
 import { TVRemoteGuide } from '../../components/UI/TVRemoteGuide'
+import type { ExperimentDiscoveryData } from '../missions/types'
 
 interface GravityLabViewProps {
   onBack: () => void
@@ -13,6 +14,8 @@ interface GravityLabViewProps {
   playClick: () => void
   playOpen: () => void
   playImpact: () => void
+  missionMode?: boolean
+  onCompleteExperiment?: (data: ExperimentDiscoveryData) => void
 }
 
 export function GravityLabView({
@@ -22,6 +25,8 @@ export function GravityLabView({
   playClick,
   playOpen,
   playImpact,
+  missionMode = false,
+  onCompleteExperiment,
 }: GravityLabViewProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -84,6 +89,81 @@ export function GravityLabView({
           </div>
 
           <div className="wb-header-right">
+            {missionMode && onCompleteExperiment && (
+              <button
+                type="button"
+                className="wb-btn wb-btn-primary"
+                style={{ padding: '0.55rem 1.1rem', fontSize: '0.82rem', height: '42px' }}
+                onClick={() => {
+                  playClick()
+                  const elapsedVal =
+                    state.status === 'impacted'
+                      ? state.elapsedTime
+                      : state.status === 'running' && state.elapsedTime > 0
+                      ? state.elapsedTime
+                      : state.theoreticalImpactTime
+                  const velVal =
+                    state.status === 'impacted'
+                      ? state.velocity
+                      : state.status === 'running' && state.velocity > 0
+                      ? state.velocity
+                      : state.theoreticalImpactVelocity
+
+                  const data: ExperimentDiscoveryData = {
+                    labType: 'gravity-lab',
+                    labName: 'Gravity Vacuum Chamber',
+                    completedAt: new Date().toISOString(),
+                    parametersUsed: {
+                      'Drop Height': `${state.initialHeight} m`,
+                      'Surface Gravity': `${state.gravity} m/s²`,
+                      'Sim Status': state.status.toUpperCase(),
+                    },
+                    metrics: [
+                      {
+                        id: 'drop_height',
+                        label: 'Initial Drop Height',
+                        value: state.initialHeight,
+                        unit: 'm',
+                        theoreticalValue: state.initialHeight,
+                        description: 'Vertical height from gantry launch deck to floor.',
+                      },
+                      {
+                        id: 'gravity',
+                        label: 'Gravitational Acceleration (g)',
+                        value: state.gravity,
+                        unit: 'm/s²',
+                        theoreticalValue: state.gravity,
+                        description: 'Downward gravitational acceleration inside tower.',
+                      },
+                      {
+                        id: 'time',
+                        label: 'Elapsed Free-Fall Time (t)',
+                        value: Number(elapsedVal.toFixed(3)),
+                        unit: 's',
+                        theoreticalValue: Number(state.theoreticalImpactTime.toFixed(3)),
+                        description: 'Time to fall 20 meters: t = √(2h/g).',
+                      },
+                      {
+                        id: 'velocity',
+                        label: 'Impact Velocity (v)',
+                        value: Number(velVal.toFixed(2)),
+                        unit: 'm/s',
+                        theoreticalValue: Number(state.theoreticalImpactVelocity.toFixed(2)),
+                        description: 'Terminal velocity upon striking floor: v = √(2gh).',
+                      },
+                    ],
+                    conclusion:
+                      'In a vacuum with aerodynamic drag removed, gravitational acceleration acts on the object uniformly, verifying classical Newtonian mechanics (s = ½gt²).',
+                    scientificPrinciple: 'Galilean Equivalence & Newtonian Kinematics',
+                  }
+                  onCompleteExperiment(data)
+                }}
+                data-tv-focus="true"
+              >
+                <span>LOG TELEMETRY</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </button>
+            )}
             <button
               type="button"
               className="wb-icon-button"
