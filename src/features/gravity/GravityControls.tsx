@@ -1,4 +1,4 @@
-import { Play, Pause, RotateCcw, Compass, Sliders } from 'lucide-react'
+import { Play, Pause, RotateCcw, Compass, Sliders, Minus, Plus } from 'lucide-react'
 import {
   GRAVITY_PRESETS,
   MIN_GRAVITY,
@@ -28,6 +28,11 @@ export function GravityControls({
   const isPaused = status === 'paused'
   const isImpacted = status === 'impacted'
   const isIdle = status === 'idle'
+
+  const handleStepGravity = (delta: number) => {
+    const next = Math.max(MIN_GRAVITY, Math.min(MAX_GRAVITY, Number((gravity + delta).toFixed(2))))
+    onSelectGravity(next)
+  }
 
   return (
     <section className="wb-gravity-controls-panel" aria-label="Experiment Control Console">
@@ -72,23 +77,53 @@ export function GravityControls({
             <Sliders className="wb-slider-icon" aria-hidden="true" />
             <span>CUSTOM VALUE (1 – 25 m/s²)</span>
           </label>
-          <span className="wb-slider-readout">
+          <span className="wb-slider-readout" aria-live="polite" aria-atomic="true">
             <strong className="wb-readout-num">{gravity.toFixed(2)}</strong> m/s²
           </span>
         </div>
 
-        <input
-          id="gravity-slider"
-          type="range"
-          min={MIN_GRAVITY}
-          max={MAX_GRAVITY}
-          step={0.1}
-          value={gravity}
-          onChange={(e) => onSelectGravity(parseFloat(e.target.value))}
-          className="wb-range-slider"
-          data-tv-focus="true"
-          aria-label="Gravitational acceleration in meters per second squared"
-        />
+        <div className="wb-slider-row-stepper">
+          <button
+            type="button"
+            className="wb-step-btn"
+            onClick={() => handleStepGravity(-0.5)}
+            disabled={gravity <= MIN_GRAVITY}
+            data-tv-focus="true"
+            aria-label="Decrease gravity by 0.5 m/s²"
+            title="Decrease gravity (-0.5 m/s²)"
+          >
+            <Minus className="wb-step-icon" aria-hidden="true" />
+          </button>
+
+          <input
+            id="gravity-slider"
+            type="range"
+            min={MIN_GRAVITY}
+            max={MAX_GRAVITY}
+            step={0.1}
+            value={gravity}
+            onChange={(e) => onSelectGravity(parseFloat(e.target.value))}
+            className="wb-range-slider"
+            data-tv-focus="true"
+            aria-label="Gravitational acceleration in meters per second squared"
+            aria-valuemin={MIN_GRAVITY}
+            aria-valuemax={MAX_GRAVITY}
+            aria-valuenow={gravity}
+            aria-valuetext={`${gravity.toFixed(2)} meters per second squared`}
+          />
+
+          <button
+            type="button"
+            className="wb-step-btn"
+            onClick={() => handleStepGravity(0.5)}
+            disabled={gravity >= MAX_GRAVITY}
+            data-tv-focus="true"
+            aria-label="Increase gravity by 0.5 m/s²"
+            title="Increase gravity (+0.5 m/s²)"
+          >
+            <Plus className="wb-step-icon" aria-hidden="true" />
+          </button>
+        </div>
 
         <div className="wb-slider-ticks">
           <span>1.0 m/s²</span>

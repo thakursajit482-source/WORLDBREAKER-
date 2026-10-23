@@ -15,6 +15,27 @@ export function HowItWorksModal({ isOpen, onClose }: HowItWorksModalProps) {
     }
   }, [isOpen])
 
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === 'Escape' ||
+        e.key === 'Backspace' ||
+        e.key === 'GoBack' ||
+        e.key === 'Back' ||
+        e.keyCode === 27 ||
+        e.keyCode === 8 ||
+        e.keyCode === 4
+      ) {
+        e.preventDefault()
+        e.stopPropagation()
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (

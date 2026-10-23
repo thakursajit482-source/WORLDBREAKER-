@@ -49,6 +49,7 @@ export function Header({ soundEnabled, onToggleSound }: HeaderProps) {
           onClick={onToggleSound}
           aria-label={soundEnabled ? 'Mute procedural audio' : 'Enable procedural audio'}
           title={soundEnabled ? 'Mute audio' : 'Enable audio'}
+          data-tv-focus="true"
         >
           {soundEnabled ? (
             <Volume2 className="wb-icon-btn" aria-hidden="true" />
@@ -63,6 +64,7 @@ export function Header({ soundEnabled, onToggleSound }: HeaderProps) {
           onClick={toggleFullscreen}
           aria-label={isFullscreen ? 'Exit fullscreen mode' : 'Enter fullscreen mode'}
           title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          data-tv-focus="true"
         >
           {isFullscreen ? (
             <Minimize className="wb-icon-btn" aria-hidden="true" />

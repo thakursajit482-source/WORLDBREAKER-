@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Play, Pause, RotateCcw, Sliders, Compass, Minus, Plus, BookOpen } from 'lucide-react'
 import {
   ROTATION_PRESETS,
@@ -19,7 +20,7 @@ interface RotationControlsProps {
   onOpenEducation: () => void
 }
 
-export function RotationControls({
+export const RotationControls = memo(function RotationControls({
   speedMultiplier,
   isPaused,
   activePreset,
@@ -83,7 +84,7 @@ export function RotationControls({
             <Sliders className="wb-slider-icon" aria-hidden="true" />
             <span>ROTATION SPEED (0.1× – 5.0×)</span>
           </label>
-          <span className="wb-slider-readout">
+          <span className="wb-slider-readout" aria-live="polite" aria-atomic="true">
             <strong className="wb-readout-num">{speedMultiplier.toFixed(2)}</strong> × Earth speed
           </span>
         </div>
@@ -112,6 +113,10 @@ export function RotationControls({
             className="wb-range-slider"
             data-tv-focus="true"
             aria-label="Planetary rotation speed multiplier"
+            aria-valuemin={MIN_ROTATION_SPEED}
+            aria-valuemax={MAX_ROTATION_SPEED}
+            aria-valuenow={speedMultiplier}
+            aria-valuetext={`${speedMultiplier.toFixed(2)} times Earth speed`}
           />
 
           <button
@@ -197,4 +202,4 @@ export function RotationControls({
       </div>
     </section>
   )
-}
+})

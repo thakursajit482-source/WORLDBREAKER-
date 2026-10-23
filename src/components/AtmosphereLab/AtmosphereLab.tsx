@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, Suspense } from 'react'
+import { useState, useCallback, useMemo, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import {
   ArrowLeft,
@@ -94,56 +94,6 @@ export function AtmosphereLab({
     setPointerOffset({ x, y })
   }, [])
 
-  // Fire TV Remote & Keyboard Navigation Hook
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // 1. Dismiss / Back handling
-      if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'GoBack') {
-        e.preventDefault()
-        handleBack()
-        return
-      }
-
-      // 2. Spatial Navigation for Fire TV D-Pad & Keyboard Arrows
-      if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        // If slider is currently focused and left/right is pressed, let native slider adjust
-        if (
-          document.activeElement?.id === 'atmo-density-slider' &&
-          (e.key === 'ArrowLeft' || e.key === 'ArrowRight')
-        ) {
-          return
-        }
-
-        const focusables = Array.from(
-          document.querySelectorAll<HTMLElement>(
-            'button:not([disabled]), input[type="range"]:not([disabled]), [tabindex="0"]',
-          ),
-        ).filter((el) => el.offsetParent !== null)
-
-        if (focusables.length === 0) return
-
-        const currentActive = document.activeElement as HTMLElement
-        const currentIndex = focusables.indexOf(currentActive)
-        let nextIndex = 0
-
-        if (currentIndex === -1) {
-          nextIndex = 0
-        } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-          nextIndex = (currentIndex + 1) % focusables.length
-          e.preventDefault()
-        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-          nextIndex = (currentIndex - 1 + focusables.length) % focusables.length
-          e.preventDefault()
-        }
-
-        focusables[nextIndex]?.focus()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleBack])
-
   return (
     <div
       className={`wb-atmo-container ${className}`}
@@ -188,11 +138,12 @@ export function AtmosphereLab({
               type="button"
               className="wb-atmo-back-btn"
               onClick={handleBack}
-              aria-label="Back to Orbit"
+              aria-label="Return to Lab Selector"
+              title="Return to Lab Selector (Esc / Back)"
               data-tv-focus="true"
             >
               <ArrowLeft className="wb-atmo-icon-sm" aria-hidden="true" />
-              <span>Back to Orbit</span>
+              <span>LAB SELECTOR</span>
             </button>
 
             <div className="wb-atmo-title-group">
@@ -262,6 +213,7 @@ export function AtmosphereLab({
                   value={density}
                   onChange={(e) => handleDensityChange(parseFloat(e.target.value))}
                   className="wb-atmo-range-slider"
+                  autoFocus
                   aria-label="Atmospheric density slider from 0 to 5 times Earth normal"
                   aria-valuemin={0}
                   aria-valuemax={5.0}
@@ -447,7 +399,7 @@ export function AtmosphereLab({
             </span>
             <span className="wb-atmo-key-pill">
               <span className="wb-atmo-key-badge">BACK / ESC</span>
-              <span>Return to Orbit</span>
+              <span>Return to Lab Selector</span>
             </span>
           </div>
 
