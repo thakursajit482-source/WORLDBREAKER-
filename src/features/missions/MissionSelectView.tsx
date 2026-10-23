@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react'
 import { MISSIONS } from './missionData'
 import type { MissionDefinition } from './types'
 import { TVRemoteGuide } from '../../components/UI/TVRemoteGuide'
+import './missions.css'
 
 export interface MissionSelectViewProps {
   onSelectMission: (mission: MissionDefinition) => void

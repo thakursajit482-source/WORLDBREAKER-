@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import {
   scoreQuiz,
   getScoreGrade,
@@ -7,6 +9,7 @@ import {
   calculateMetricDeviation,
 } from './quizHelpers'
 import { MISSIONS } from './missionData'
+import { DiscoverySummary } from './DiscoverySummary'
 import type { QuizQuestion, ExperimentDiscoveryData } from './types'
 
 describe('Mission & Learning Experience Tests', () => {
@@ -242,6 +245,83 @@ describe('Mission & Learning Experience Tests', () => {
           expect(q.explanation.length).toBeGreaterThan(20)
         }
       }
+    })
+  })
+
+  describe('Discovery Summary Component Rendering', () => {
+    it('renders loading state with status message when isLoading is true', () => {
+      const html = renderToStaticMarkup(
+        createElement(DiscoverySummary, { isLoading: true, discoveryData: null })
+      )
+      expect(html).toContain('Compiling Telemetry Packet...')
+      expect(html).toContain('Processing real-time simulation metrics')
+    })
+
+    it('renders error state when error message is supplied', () => {
+      const html = renderToStaticMarkup(
+        createElement(DiscoverySummary, {
+          error: 'Telemetry sensor communication timeout',
+          discoveryData: null,
+        })
+      )
+      expect(html).toContain('Telemetry Sensor Error')
+      expect(html).toContain('Telemetry sensor communication timeout')
+    })
+
+    it('renders empty state when discoveryData is null or invalid', () => {
+      const html = renderToStaticMarkup(
+        createElement(DiscoverySummary, { discoveryData: null })
+      )
+      expect(html).toContain('No Telemetry Recorded')
+    })
+
+    it('renders populated telemetry measurements, units, theory comparison, and conclusion', () => {
+      const validData: ExperimentDiscoveryData = {
+        labType: 'gravity-lab',
+        labName: 'Gravity Vacuum Chamber',
+        completedAt: '2026-10-22T12:00:00Z',
+        parametersUsed: { Height: '20 m', Gravity: '9.81 m/s²' },
+        metrics: [
+          {
+            id: 'drop_height',
+            label: 'Initial Drop Height',
+            value: 20,
+            unit: 'm',
+            theoreticalValue: 20,
+          },
+          {
+            id: 'time',
+            label: 'Elapsed Free-Fall Time',
+            value: 2.02,
+            unit: 's',
+            theoreticalValue: 2.019,
+          },
+          {
+            id: 'velocity',
+            label: 'Impact Velocity',
+            value: 19.81,
+            unit: 'm/s',
+            theoreticalValue: 19.809,
+          },
+        ],
+        conclusion: 'Vacuum free-fall kinematic acceleration verified.',
+        scientificPrinciple: 'Galilean Equivalence Principle',
+      }
+
+      const html = renderToStaticMarkup(
+        createElement(DiscoverySummary, { discoveryData: validData })
+      )
+      expect(html).toContain('Discovery Telemetry Analysis')
+      expect(html).toContain('Gravity Vacuum Chamber')
+      expect(html).toContain('Initial Drop Height')
+      expect(html).toContain('20 m')
+      expect(html).toContain('Elapsed Free-Fall Time')
+      expect(html).toContain('2.02 s')
+      expect(html).toContain('Impact Velocity')
+      expect(html).toContain('19.81 m/s')
+      expect(html).toContain('THEORY MATCH')
+      expect(html).toContain('Galilean Equivalence Principle')
+      expect(html).toContain('Vacuum free-fall kinematic acceleration verified.')
     })
   })
 })

@@ -11,4 +11,11 @@ export interface PlanetTelemetry {
 
 export type ModalType = 'none' | 'how-it-works';
 
-export type AppScreen = 'home' | 'lab-select' | 'gravity-lab' | 'rotation-lab' | 'atmosphere-lab';
+export type AppScreen =
+  | 'home'
+  | 'lab-select'
+  | 'gravity-lab'
+  | 'rotation-lab'
+  | 'atmosphere-lab'
+  | 'mission-select'
+  | 'mission-flow';
